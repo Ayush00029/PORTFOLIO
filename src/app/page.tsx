@@ -1,65 +1,126 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+import Hero from "@/components/Hero";
+import About from "@/components/About";
+import Skills from "@/components/Skills";
+import Projects from "@/components/Projects";
+import Stats from "@/components/Stats";
+import Education from "@/components/Education";
+import Resume from "@/components/Resume";
+import Footer from "@/components/Footer";
+import FluidGrid from "@/components/FluidGrid";
+import Certifications from "@/components/Certifications";
+import MissionRoadmap from "@/components/MissionRoadmap";
+import WorkingProjects from "@/components/WorkingProjects";
+import CodingPrinciples from "@/components/CodingPrinciples";
+import SystemStatusFooter from "@/components/SystemStatusFooter";
+import Preloader from "@/components/Preloader";
+
+gsap.registerPlugin(ScrollTrigger);
+
+const CornerMarker = ({ position }: { position: string }) => {
+  const styles: Record<string, string> = {
+    "top-left": "top-8 left-8 border-t border-l",
+    "top-right": "top-8 right-8 border-t border-r",
+    "bottom-left": "bottom-8 left-8 border-b border-l",
+    "bottom-right": "bottom-8 right-8 border-b border-r"
+  };
+  return (
+    <div className={`fixed w-8 h-8 border-white/20 z-[1001] pointer-events-none ${styles[position]}`} />
+  );
+};
 
 export default function Home() {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const mainContentRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    if (!isLoaded) return;
+
+    // Scroll progress bar
+    gsap.to(progressBarRef.current, {
+      scaleX: 1,
+      ease: "none",
+      scrollTrigger: {
+        trigger: "body",
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 0.3,
+      }
+    });
+
+    // Content entry reveal
+    gsap.from(mainContentRef.current, {
+       opacity: 0,
+       y: 40,
+       duration: 1.5,
+       ease: "expo.out",
+       delay: 0.5
+    });
+
+    ScrollTrigger.refresh();
+  }, [isLoaded]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen bg-black w-full flex flex-col relative overflow-hidden">
+      {/* 1. Initial HUD Preloader */}
+      <Preloader onComplete={() => setIsLoaded(true)} />
+
+      {/* 2. Main Site Archive - Mounts ONLY after preloader exit is complete */}
+      {isLoaded && (
+        <>
+          <SystemStatusFooter />
+          <div ref={mainContentRef} className="w-full relative flex flex-col">
+          {/* Draftsman Corner Markers */}
+          <CornerMarker position="top-left" />
+          <CornerMarker position="top-right" />
+          <CornerMarker position="bottom-left" />
+          <CornerMarker position="bottom-right" />
+
+          {/* GSAP Scroll Progress Bar */}
+          <div
+            ref={progressBarRef}
+            className="fixed top-0 left-0 right-0 h-[1px] bg-[#DFFF00] origin-left z-[1000] scale-x-0"
+          />
+
+          {/* Grainy Noise Overlay */}
+          <div className="fixed inset-0 z-[999] pointer-events-none opacity-[0.05] mix-blend-overlay">
+            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+              <filter id="noiseFilter">
+                <feTurbulence 
+                  type="fractalNoise" 
+                  baseFrequency="0.65" 
+                  numOctaves="3" 
+                  stitchTiles="stitch" />
+              </filter>
+              <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+            </svg>
+          </div>
+
+          <FluidGrid />
+
+          <div className="relative z-10 flex flex-col w-full">
+            <Hero />
+            <About />
+            <CodingPrinciples />
+            <Skills />
+            <Projects />
+            <WorkingProjects />
+            <Certifications />
+            <Stats />
+            <Education />
+            <MissionRoadmap />
+            <Resume />
+            <Footer />
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+      </>
+    )}
+  </main>
+);
 }
